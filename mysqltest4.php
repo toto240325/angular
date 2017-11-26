@@ -1,4 +1,10 @@
 <?php
+	
+	/* 
+		test
+	*/
+	
+	
 	echo 'Version PHP courante : ' . phpversion()."<br>";
 	
 	
