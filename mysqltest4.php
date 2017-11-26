@@ -7,6 +7,19 @@
 	
 	echo 'Version PHP courante : ' . phpversion()."<br>";
 	
+	$defaultTimeZone='UTC';
+	if(date_default_timezone_get()!=$defaultTimeZone) date_default_timezone_set($defaultTimeZone);
+	
+	function _date($format="r", $timestamp=false, $timezone=false)
+	{
+		$userTimezone = new DateTimeZone(!empty($timezone) ? $timezone : 'GMT');
+		$gmtTimezone = new DateTimeZone('GMT');
+		$myDateTime = new DateTime(($timestamp!=false?date("r",(int)$timestamp):date("r")), $gmtTimezone);
+		$offset = $userTimezone->getOffset($myDateTime);
+		return date($format, ($timestamp!=false?(int)$timestamp:$myDateTime->format('U')) + $offset);
+	}
+	
+	$currTime = _date("Y-m-d H:i:s", false, 'Europe/Paris');
 	
 	function displayRawTimes($timesArray) {
 		$i=0;
@@ -41,6 +54,7 @@
 		
 		input : [{"date":"2016-09-17","title":"Agar.io - Google Chrome","duration":"57"},{"date":"2016-09-16","title":"Agar.io - Google Chrome","duration":"54"}]
 		output : [{"x":"2016-09-14 00:00:00","y":1},{"x":"2016-09-15 00:30:00","y":7},{"x":"2016-09-16 01:00:00","y":10}]
+				
 		
 		
 	*/
@@ -48,10 +62,10 @@
 		
 		$myGraphData = array();
 		foreach ($records as $rec) {
-			echo "<br>\n rec : ".var_dump($rec)."<br>\n";
-			echo "<br>\n rec_time : ".$rec->time."<br>\n";
-			echo "<br>\n rec_duration : ".$rec->duration."<br>\n";
-			echo "<br>\n rec_title : ".$rec->title."<br>\n";
+			//echo "<br>\n rec : ".var_dump($rec)."<br>\n";
+			//echo "<br>\n rec_time : ".$rec->time."<br>\n";
+			//echo "<br>\n rec_duration : ".$rec->duration."<br>\n";
+			//echo "<br>\n rec_title : ".$rec->title."<br>\n";
 			
 			$elem = array('x' => $rec->time, 'y' => (int) $rec->duration);
 			$myGraphData[] = $elem;
@@ -153,6 +167,7 @@
 		mysqli_close($conn);
 		return $time;
 	}
+	
 	//---------------------------------------------------------------------------------
 	/* this function return raw (x,y) data in this format (but not json encoded !):
 		[{"x":"2016-08-01 00:00:06","y":98},
@@ -196,6 +211,7 @@
 		mysqli_close($conn);
 		return $rows;
 	}
+
 	//---------------------------------------------------------------------------------
 	/* this function takes data in this format (but not json encoded) :
 		[{"x":"2016-08-01 00:00:06","y":98},
@@ -266,8 +282,6 @@
 	//======================================================================================
 	//======================================================================================
 	//======================================================================================
-	//======================================================================================
-	//======================================================================================
 	
 	$myFunc = "2";
 	$period = 30;
@@ -320,7 +334,7 @@
 	"&myFunc=dailySummary";
 	
 	#echo "fromAgar : ".$fromAgar."  toAgar : ".$toAgar."<br>";
-	#echo "mypage Agario : ".$myPageAgarioOnly."<br>";
+	//echo "mypage Agario : ".$myPageAgarioOnly."<br>";
 	$json = file_get_contents($myPageAgarioOnly);
 	//echo "json 33 : "."<br>";
 	//print_r($json);
@@ -336,19 +350,13 @@
 		echo "!!!!!!!!!!!!!!! Error getting data from mypc3 !!!!!!!! ";
 	
 		} else {
+		//echo "<br>json 40<br>";
+		//echo json_encode($obj->records)."<br>";
 		//echo "count : ".count($obj->records)."<br>";
 		
-		
-		echo "<br>\njson 40<br>";
-		var_dump($obj->records);
-	
-		
-		
-		
-		
-		
+		//echo "<br>records 1 : ".json_encode($obj->records)."<br>";
 		$graphData = makeGraphDataFromAgario($obj->records);		
-		//echo "graphData : ".json_encode($graphData)."<br>";
+		//echo "<br>graphData1 : ".json_encode($graphData)."<br>";
 		//echo "<br>";
 		//$graphData = json_decode('[{"datetime":"2016-09-14 00:00:00","nbDetections":1},{"datetime":"2016-09-15 00:30:00","nbDetections":"0"},{"datetime":"2016-09-16 01:00:00","nbDetections":"0"}]');
 		//$GGdata = convertGraphDataToGoogleGraph($graphData);
@@ -377,15 +385,18 @@
 	"&nbrecs=100".
 	"&order=date".
 	"&myFunc=dailySummaryTotal";
-	echo "=========================================".$myPageAgarioAndOtherGames."<br>";
+	//echo "<br><br>=========================================<br>".$myPageAgarioAndOtherGames."<br>";
 	
 	//echo "fromAgar : ".$fromAgar."  toAgar : ".$toAgar."<br>";
 	//echo "mypage Agario2 : ".$myPageAgarioAndOtherGames."<br>";
 	$json = file_get_contents($myPageAgarioAndOtherGames);
-	//echo "json 33 : "."<br>";
+	//echo "json 34 : "."<br>";
 	//print_r($json);
 	//echo "test 34<br>\n"; var_dump($json);
 	$obj = json_decode($json);
+
+
+	
 	
 	if ($obj->errMsg != "") {
 
@@ -394,7 +405,12 @@
 		} else {
 		//echo "count : ".count($obj->records)."<br>";
 		$timesArray = $obj->records;
+		
+		//echo json_encode($obj->records)."<br>";
+		
+		//echo "<br>records 2 : ".json_encode($obj->records)."<br>";
 		$graphData = makeGraphDataFromAgario($obj->records);
+		//echo "<br>graphData2 : ".json_encode($graphData)."<br>";
 		
 		//echo "graphData : ".json_encode($graphData)."<br>";
 		//echo "<br>";
@@ -414,7 +430,10 @@
 		//echo $jsonTableAgarioAndOtherGames."\n<br>";
 		
 	}
-	
+
+//	echo "just before html\n\n";
+//	exit("test exit");
+
 	
 ?>
 

@@ -3,16 +3,33 @@
 	/*
 		This function returns in json an array containing all the detection times between two dates
 		to test it :
-			
-		http://192.168.0.2/angular/getWindowResult.php?from='2017-11-15'&to='2017-11-26'&filter="Agar.io - Google Chrome","slither.io - Google Chrome","diep.io - Google Chrome","space1.io - Google Chrome"&myhost=192.168.0.2&nbrecs=100&order=date&myFunc=dailySummaryTotal
+		
+
+		dailySummary:
+		http://192.168.0.2/angular/getWindowResult.php?from='2017-11-16'&to='2017-11-27'&filter=Agar.io+-+Google+Chrome&myhost=192.168.0.2&nbrecs=100&order=date&myFunc=dailySummary
+		
+		Should return something like this:
+		{"records":[
+			{"id":"","time":"2017-11-22","title":"Agar.io - Google Chrome","duration":"0"},
+			{"id":"","time":"2017-11-23","title":"Agar.io - Google Chrome","duration":"45"},
+			{"id":"","time":"2017-11-24","title":"Agar.io - Google Chrome","duration":"0"},
+			{"id":"","time":"2017-11-25","title":"Agar.io - Google Chrome","duration":"64"},
+			{"id":"","time":"2017-11-26","title":"Agar.io - Google Chrome","duration":"67"}],
+		"errMsg":"",
+		"from":"'2017-11-16'",
+		"to":"'2017-11-27'"}
+
+		dailySummaryTotal:
+		http://192.168.0.2/angular/getWindowResult.php?from='2017-11-15'&to='2017-11-26'&filter="Agar.io - Google Chrome","slither.io - Google Chrome"&myhost=192.168.0.2&nbrecs=100&order=date&myFunc=dailySummaryTotal
 						
 		Should return something like this : 
 		
-		{"records":[{"date":"2017-11-15","title":"","duration":"1"},
-					{"date":"2017-11-22","title":"","duration":"0"},
-					{"date":"2017-11-23","title":"","duration":"50"},
-		            {"date":"2017-11-24","title":"","duration":"0"},
-					{"date":"2017-11-25","title":"","duration":"58"}],
+		{"records":[
+			{"date":"2017-11-15","title":"","duration":"1"},
+			{"date":"2017-11-22","title":"","duration":"0"},
+			{"date":"2017-11-23","title":"","duration":"50"},
+		    {"date":"2017-11-24","title":"","duration":"0"},
+			{"date":"2017-11-25","title":"","duration":"58"}],
 		"errMsg":"",
 		"from":"'2017-11-15'",
 		"to":"'2017-11-26'"}
@@ -317,14 +334,16 @@
 				
 				if ($outp != "") {$outp .= ",";}	
 				
+				$id = "";
 				$title = "";
 				$date = $row["date"];
 				$duration = $row["duration"];
 
 				$outp .= '{';
-				$outp .= '"date":'   . json_encode($date). ',';
-				$outp .= '"title":'   . json_encode(utf8_encode($title)). ',';
-				$outp .= '"duration":"' . number_format(strval($duration/60),0) . '"';
+				$outp .= '"id"		:' 	.json_encode($id)					. ',';
+				$outp .= '"time"	:' 	.json_encode($date)					. ',';
+				$outp .= '"title"	:' 	.json_encode(utf8_encode($title))	. ',';
+				$outp .= '"duration":"' .number_format(strval($duration/60),0) . '"';
 				$outp .= '}';
 				
 				$myfgw = new Fgw("",$date,$row["fgw_title"],$row["duration"]);
@@ -338,7 +357,7 @@
 	}
 
 
-	function getDailySummaryTotalOld($from,$to,$filter,$myhost,$nbrecs,$order) {
+	function getDailySummaryTotalOldgetDailySummaryTotalOld($from,$to,$filter,$myhost,$nbrecs,$order) {
 
 		//$order = "duration desc"
 		$outp = "";
