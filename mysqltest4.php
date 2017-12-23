@@ -176,11 +176,8 @@
 		{"x":"2016-06-21 22:45:44","y":43}]
 	*/
 	function getTemperatureData() {
-		$dbhost = 'localhost';
-		$dbuser = 'toto';
-		$dbpass = 'Toto!';
-		$mydb = 'loki';
-		
+		$dbhost = '192.168.0.147';
+		include 'connect-db.php';
 		$conn = mysqli_connect($dbhost, $dbuser, $dbpass,$mydb);
 		
 		if(! $conn )

@@ -6,7 +6,7 @@
 		
 
 		dailySummary:
-		http://192.168.0.2/angular/getWindowResult.php?from='2017-11-16'&to='2017-11-27'&filter=Agar.io+-+Google+Chrome&myhost=192.168.0.2&nbrecs=100&order=date&myFunc=dailySummary
+		http://192.168.0.2/angular/getWindowResult.php?from='2017-11-16'&to='2017-11-27'&filter=Agar.io+-+Google+Chrome&dbhost=192.168.0.2&nbrecs=100&order=date&myFunc=dailySummary
 		
 		Should return something like this:
 		{"records":[
@@ -20,7 +20,7 @@
 		"to":"'2017-11-27'"}
 
 		dailySummaryTotal:
-		http://192.168.0.2/angular/getWindowResult.php?from='2017-11-15'&to='2017-11-26'&filter="Agar.io - Google Chrome","slither.io - Google Chrome"&myhost=192.168.0.2&nbrecs=100&order=date&myFunc=dailySummaryTotal
+		http://192.168.0.2/angular/getWindowResult.php?from='2017-11-15'&to='2017-11-26'&filter="Agar.io - Google Chrome","slither.io - Google Chrome"&dbhost=192.168.0.2&nbrecs=100&order=date&myFunc=dailySummaryTotal
 						
 		Should return something like this : 
 		
@@ -40,6 +40,8 @@
 
 	header("Access-Control-Allow-Origin: *");
 	header("Content-Type: application/json; charset=UTF-8");
+	$dbhost = "192.168.0.147";
+	
 	//echo $_SERVER['REQUEST_URI']."\n";
 	//echo gethostname()."\n";
 
@@ -66,7 +68,7 @@
 	}
 
 
-	function getDetails($from,$to,$filter,$myhost,$nbrecs) {
+	function getDetails($from,$to,$filter,$dbhost,$nbrecs) {
 		$outp = "";
 		$errMsg = "";
 
@@ -136,7 +138,7 @@
 	}
 
 
-	function getSummary($from,$to,$filter,$myhost,$nbrecs) {
+	function getSummary($from,$to,$filter,$dbhost,$nbrecs) {
 		$outp = "";
 		$errMsg = "";
 
@@ -206,7 +208,7 @@
 	}
 
 
-	function getDailySummary($from,$to,$filter,$myhost,$nbrecs,$order) {
+	function getDailySummary($from,$to,$filter,$dbhost,$nbrecs,$order) {
 
 		//$order = "duration desc"
 		$outp = "";
@@ -235,7 +237,7 @@
 		$conn = new mysqli($dbhost,$dbuser,$dbpass,$mydb);
 		if ($conn->connect_error) {
 			//echo 'Server error. Please try again sometime. CON';
-			$errMsg = 'Server error. Please try again sometime. myhost:'.$myhost.' dbhost :'.$dbhost."  mydb:".$mydb;
+			$errMsg = 'Server error. Please try again sometime. dbhost :'.$dbhost."  mydb:".$mydb;
 			$outp = "{}";
 			return array('outp' => $outp, 'errMsg' => $errMsg);	
 		} 
@@ -292,7 +294,7 @@
 	}
 	
 	
-	function getDailySummaryTotal($from,$to,$filter,$myhost,$nbrecs,$order) {
+	function getDailySummaryTotal($from,$to,$filter,$dbhost,$nbrecs,$order) {
 
 		//$order = "duration desc"
 		$outp = "";
@@ -357,7 +359,7 @@
 	}
 
 
-	function getDailySummaryTotalOldgetDailySummaryTotalOld($from,$to,$filter,$myhost,$nbrecs,$order) {
+	function getDailySummaryTotalOldgetDailySummaryTotalOld($from,$to,$filter,$dbhost,$nbrecs,$order) {
 
 		//$order = "duration desc"
 		$outp = "";
@@ -467,8 +469,7 @@
 	$nbrecs = "5";
 	if(isset($_GET['nbrecs'])) { $nbrecs = $_GET['nbrecs']; }
 
-	$myhost = "192.168.0.147";
-	if(isset($_GET['myhost'])) { $myhost = $_GET['myhost']; }
+	if(isset($_GET['dbhost'])) { $dbhost = $_GET['dbhost']; }
 
 	$order = "duration desc";
 	if(isset($_GET['order'])) { $order = $_GET['order']; }
@@ -479,19 +480,19 @@
 	//echo "this is a test 2";
 
 	if ($myFunc == "details") {
-		$myArray = getDetails($from,$to,$filter,$myhost,$nbrecs);
+		$myArray = getDetails($from,$to,$filter,$dbhost,$nbrecs);
 		} elseif ($myFunc == "summary") {
-		$myArray = getSummary($from,$to,$filter,$myhost,$nbrecs);
+		$myArray = getSummary($from,$to,$filter,$dbhost,$nbrecs);
 		$outp = json_encode($myArray['fgws']);
 		} elseif ($myFunc == "dailySummary") {
-		$myArray = getDailySummary($from,$to,$filter,$myhost,$nbrecs,$order);
+		$myArray = getDailySummary($from,$to,$filter,$dbhost,$nbrecs,$order);
 		//$outp = $myArray['outp'];
 		$errMsg = $myArray['errMsg'];
 		//$fgws = $myArray['fgws'];
 		$outp = json_encode($myArray['fgws']);
 		//echo "fgws_js : ".$fgws."<br>\n";
 		} elseif ($myFunc == "dailySummaryTotal") {
-		$myArray = getDailySummaryTotal($from,$to,$filter,$myhost,$nbrecs,$order);
+		$myArray = getDailySummaryTotal($from,$to,$filter,$dbhost,$nbrecs,$order);
 	}
 
 	
