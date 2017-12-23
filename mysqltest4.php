@@ -283,7 +283,7 @@
 	$myFunc = "2";
 	$period = 30;
 	
-	$mypage = "http://192.168.0.2/loki/getDetectionTimes.php?myFunc=9&from='".$from."'&to='".$to."'&period=".$period;
+	$mypage = "http://".$webserver."/loki/getDetectionTimes.php?myFunc=9&from='".$from."'&to='".$to."'&period=".$period;
 	//echo "my page : ".$mypage."<br>";
 	$json = file_get_contents($mypage);
 	//echo "json7 :\n<br>"; var_dump($json);
@@ -321,11 +321,11 @@
 	$filter = urlencode('Agar.io - Google Chrome');
 	$to = urlencode($to);
 	
-	$myPageAgarioOnly = "http://192.168.0.2/angular/getWindowResult.php".
+	$myPageAgarioOnly = "http://".$webserver."/angular/getWindowResult.php".
 	"?from='".$fromAgar."'".
 	"&to='".$toAgar."'".
 	"&filter=".$filter.
-	"&myhost=192.168.0.2".
+	"&dbhost=192.168.0.2".
 	"&nbrecs=100".
 	"&order=date".
 	"&myFunc=dailySummary";
@@ -371,14 +371,14 @@
 	
 	//----------------------------------------------------------------------------------
 	// getting the data related to all the different games
-	$inFilter = urlencode('"Agar.io - Google Chrome","slither.io - Google Chrome","diep.io - Google Chrome","space1.io - Google Chrome"');
+	$inFilter = urlencode('"Agar Private Server Agario Game Play Agario - Google Chrome","Agar.io - Google Chrome","slither.io - Google Chrome","diep.io - Google Chrome","space1.io - Google Chrome"');
 	$to = urlencode($to);
 	
-	$myPageAgarioAndOtherGames = "http://192.168.0.2/angular/getWindowResult.php".
+	$myPageAgarioAndOtherGames = "http://".$webserver."/angular/getWindowResult.php".
 	"?from='".$fromAgar."'".
 	"&to='".$toAgar."'".
 	"&filter=".$inFilter.
-	"&myhost=192.168.0.2".
+	"&dbhost=".$dbhost.
 	"&nbrecs=100".
 	"&order=date".
 	"&myFunc=dailySummaryTotal";
@@ -489,19 +489,32 @@
 			}
 			
 			$scope.myStyleLastTemp= function(){
-				$scope.tempDiffInMin = ($scope.staticNow - (new Date($scope.lastTemp))) / (60*1000);
+				$scope.tempDiffInMin = ($scope.staticNow - (new Date($scope.lastTemp))) / (60*1000*60);  // hours
 				$scope.tempDiffInMin = $scope.tempDiffInMin.toFixed(2);
 				return parseInt($scope.tempDiffInMin) > 5 ? {'background-color': 'pink'} : {'background-color': 'lightgreen'}
 			}
 			
 			$scope.myStyleLastDetection= function(){
-				$scope.DetectionDiffInMin = ($scope.staticNow - (new Date($scope.lastDetectionTime))) / (60*1000);
+				$scope.DetectionDiffInMin = ($scope.staticNow - (new Date($scope.lastDetectionTime))) / (60*1000); //min
 				$scope.DetectionDiffInMin = $scope.DetectionDiffInMin.toFixed(0);
 				return parseInt($scope.DetectionDiffInMin) > 3*60 ? {'background-color': 'pink'} : {'background-color': 'lightgreen'}
 			}
 			
-			$scope.lokiEatingURL = "http://192.168.0.2/loki/eating_log.php";
-			$scope.showLogURL = "http://192.168.0.2/loki/showlog.php";
+			$scope.myStyleLastEvent = function($type,$time){
+				diffInMin = ($scope.staticNow - (new Date($time))) / (60*1000); //min
+				console.log("type : ",$type," time: ",$time);
+				if ($type = "backup P702") {
+					return parseInt($scope.DetectionDiffInMin) > 28*60 ? {'background-color': 'pink'} : {'background-color': 'lightgreen'}
+				} else if ($type = "1") {
+					return parseInt($scope.DetectionDiffInMin) > 3*60 ? {'background-color': 'pink'} : {'background-color': 'lightgreen'}
+				} else {
+					return parseInt($scope.DetectionDiffInMin) > 3*60 ? {'background-color': 'pink'} : {'background-color': 'lightgreen'}
+				} 
+								
+			}
+			
+			$scope.lokiEatingURL = "http://".$webserver."/loki/eating_log.php";
+			$scope.showLogURL = "http://".$webserver."/loki/showlog.php";
 			
 			/*
 				$scope.myCount = 0;
@@ -526,10 +539,8 @@
 			$scope.to = "2099-12-31";
 			$scope.filter = "";
 			$scope.myFunc = "dailySummary";
-			$scope.myhost = "localhost";
+			$scope.dbhost = $dbhost;
 			$scope.nbrecs = "15";
-			$scope.myhost = "hp2560";
-			$scope.myhost = "192.168.0.2";
 			$scope.testdata = "test";
 			$scope.testdata2 = new Array("toto", "tutu");
 			$scope.testdata2["toto"] = "datatoto";
@@ -550,12 +561,12 @@
 				return $filter('date')($fromDate,'yyyy-MM-dd');
 			}
 			$scope.getResults = function() {
-				$scope.myPage = "http://192.168.0.2/angular/getWindowResult.php" +
+				$scope.myPage = "http://".$webserver."/angular/getWindowResult.php" +
 				"?from='" + $scope.convStrToDate($scope.from) + "'" +
 				//					"?from='" + $filter('date')($scope.fromDate,'yyyy-MM-dd') + "'" +
 				"&to='"+ $scope.to + "'" +
 				"&filter="+ $scope.filter +
-				"&myhost="+ $scope.myhost +
+				"&dbhost="+ $scope.dbhost +
 				"&nbrecs="+ $scope.nbrecs +
 				"&order=duration+desc" +
 				"&myFunc="+ $scope.myFunc;
@@ -576,17 +587,15 @@
 			}
 			$scope.getResults();
 			
-			$scope.myhostLokiDB = "192.168.0.147";
 			$scope.getLastTemp = function() {
-				$scope.myPage2 = "http://192.168.0.2/loki/getLastUpdateTime.php" +
-				"?myhost="+ $scope.myhostLokiDB;
+				$scope.myPage2 = "http://".$webserver."/loki/getLastEvent.php" +
+				"?dbhost="+ $scope.dbhost+"&type=temperature";
 				$http.get($scope.myPage2)
 				.then(
 				function(response) {
-					$scope.lastTemp = response.data.recordsTemp;
-					$scope.lastDetectionTime = response.data.recordsDetection.time;
-					$scope.lastDetectionTxt = response.data.recordsDetection.txt;
-					$scope.lastDetectionTemp = response.data.recordsDetection.temp;
+					$scope.lastTemp = response.data.time;
+					$scope.lastDetectionTime = response.data.time;
+					$scope.lastDetectionTemp = response.data.text;
 				},
 				function(failure) {
 					$errorMsg = "Error in getLastTemp : " + failure;
@@ -595,16 +604,16 @@
 				});
 			}
 			$scope.getLastEvent = function($myArray,$type) {
-				$myURL = 'http://192.168.0.2/loki/getEvent.php?type="'+$type+'"';
+				$myURL = 'http://".$webserver."/loki/getLastEvent.php?type='+$type;
 				//alert($myURL);
-				//console.log("myURL37:"+$myURL);
+				console.log("myURL37:"+$myURL);
 				$http.get($myURL)
 				.then(
 				function(response) {
-					$lastEventTime = response.data.lastEvent.time;
-					$lastDetectionTxt = response.data.lastEvent.type;
-					$lastDetectionTemp = response.data.lastEvent.text;
-					$myArray[$type] = $lastEventTime;
+					//$lastEventTime = response.data.time;
+					//$lastDetectionTxt = response.data.text;
+					//alert(response.data.text);
+					$myArray[$type] = response.data.time;
 				},
 				function(failure) {
 					$errorMsg = "Error in getLastEvent3 (for type " + $type + ") : " + failure;
@@ -614,7 +623,7 @@
 				
 			}
 			$scope.getLastEventGetWindowTitleMypc3 = function($myArray,$type) {
-				$myURL = 'http://192.168.0.2/test/getLastTimeWindowTitle.php';
+				$myURL = 'http://".$webserver."/test/getLastTimeWindowTitle.php';
 				//alert($myURL);
 				//console.log($myURL);
 				$http.get($myURL)
@@ -811,13 +820,15 @@
 			<td>
 				<b>Last Temp recorded : </b>
 				<span  ng-style="myStyleLastTemp(lastTemp)"> {{lastTemp}} </span><br>
-				({{tempDiffInMin}})
+				({{tempDiffInMin}} hours)
 				<hr> <!--------------------------------------------------->
 				<b>Last Detection recorded : </b>
 				<span  ng-style="myStyleLastDetection(lastDetetionTime)"> {{lastDetectionTime}} </span><br>
-				({{DetectionDiffInMin}})
+				({{DetectionDiffInMin}} min)
 				<hr> <!--------------------------------------------------->
 				<b>event[1]: {{ eventsArray["1"] }} </b><br>
+				<b>backup P702: <span  ng-style="myStyleLastEvent('backup P720','2017-12-17 16:31:53')"> {{ eventsArray["backup P702"] }} </span></b><br>
+				<b>backup P702: <span  ng-style="myStyleLastEvent('backup P720',eventsArray['backup P720'])"> {{ eventsArray["backup P702"] }} </span></b><br>
 				<b>backup P702: <span  ng-style="myStyleLastDetection(eventsArray['backup P720'])"> {{ eventsArray["backup P702"] }} </span></b><br>
 				<b>last getWindows: <span  ng-style="myStyleLastGetwindowTitleMypc3(eventsArray['getWindowTitle mypc3'])"> {{ eventsArray["getWindowTitle mypc3"] }} </span></b><br>
 			</td>
