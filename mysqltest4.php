@@ -5,8 +5,10 @@ test
  */
 
 echo 'Version PHP courante : ' . phpversion() . "<br>";
-$webserver = "192.168.0.2";
+//$webserver = "192.168.0.147";
+$webserver = "localhost";
 $dbhost = "192.168.0.147";
+//$dbhost = "localhost";
 
 $defaultTimeZone = 'UTC';
 if (date_default_timezone_get() != $defaultTimeZone) {
@@ -156,10 +158,12 @@ function getLastGetWindowTitleMypc3()
         echo "Database is empty <br>";
     } else {
         $time = "";
+        $host = "";
         $title = "";
-        echo "nb results getWindowTitleMypc3 : " . mysqli_num_rows($result) . "<p>";
+        echo "nb results getWindowTitle : " . mysqli_num_rows($result) . "<p>";
         while ($row = $result->fetch_assoc()) {
             $time = $row['fgw_time'];
+            $host = $row['fgw_host'];
             $title = $row['fgw_title'];
         }
     }
@@ -463,22 +467,10 @@ if ($obj->errMsg != "") {
 
             $interval(displayCurrentDate, 10*1000);
 
-            $scope.myStyleLastEvent2 = function(){
-                $scope.eventDiffInMin = ($scope.staticNow - (new Date($scope.lastEvent2Time))) / (60*1000);
-                $scope.eventDiffInMin = $scope.eventDiffInMin.toFixed(2);
-                return parseInt($scope.eventDiffInMin) > 25 * 60 ? {'background-color': 'pink'} : {'background-color': 'lightgreen'}
-            }
-
             $scope.myStyleLastBackup = function(){
                 $scope.backupDiffInMin = ($scope.staticNow - (new Date($scope.eventsArray["backup P702"]))) / (60*1000);
                 $scope.backupDiffInMin = $scope.backupDiffInMin.toFixed(2);
                 return parseInt($scope.backupDiffInMin) > 25 * 60 ? {'background-color': 'pink'} : {'background-color': 'lightgreen'}
-            }
-
-            $scope.myStyleLastGetwindowTitleMypc3 = function(){
-                $scope.backupDiffInMin = ($scope.staticNow - (new Date($scope.eventsArray["getWindowTitle mypc3"]))) / (60*1000);
-                $scope.backupDiffInMin = $scope.backupDiffInMin.toFixed(2);
-                return parseInt($scope.backupDiffInMin) > 1 ? {'background-color': 'pink'} : {'background-color': 'lightgreen'}
             }
 
             $scope.myStyleLastTemp= function(){
@@ -494,11 +486,13 @@ if ($obj->errMsg != "") {
             }
 
             $scope.myStyleLastEvent = function($type,$time){
-                diffInMin = ($scope.staticNow - (new Date($time))) / (60*1000); //min
-                console.log("type : ",$type," time: ",$time);
-                if ($type = "backup P702") {
+                $scope.DetectionDiffInMin = ($scope.staticNow - (new Date($time))) / (60*1000); //min
+                $scope.DetectionDiffInMin = $scope.DetectionDiffInMin.toFixed(0);
+                //console.log("type : ",$type," time: ",$time, "diffinmin : ", $scope.DetectionDiffInMin);
+                if ($type == "backup P702") {
+                    //return parseInt($scope.DetectionDiffInMin) > 2 ? {'background-color': 'pink'} : {'background-color': 'lightgreen'}
                     return parseInt($scope.DetectionDiffInMin) > 28*60 ? {'background-color': 'pink'} : {'background-color': 'lightgreen'}
-                } else if ($type = "1") {
+                } else if ($type == "getWindowTitle mypc3") {
                     return parseInt($scope.DetectionDiffInMin) > 3*60 ? {'background-color': 'pink'} : {'background-color': 'lightgreen'}
                 } else {
                     return parseInt($scope.DetectionDiffInMin) > 3*60 ? {'background-color': 'pink'} : {'background-color': 'lightgreen'}
@@ -616,8 +610,8 @@ if ($obj->errMsg != "") {
             }
             $scope.getLastEventGetWindowTitleMypc3 = function($myArray,$type) {
                 $myURL = "http://"+webserver+"/test/getLastTimeWindowTitle.php";
-                //alert($myURL);
-                //console.log($myURL);
+                //alert("myurl 38 : " + $myURL);
+                console.log("myurl 38 : " + $myURL);
                 $http.get($myURL)
                 .then(
                 function(response) {
@@ -819,10 +813,8 @@ if ($obj->errMsg != "") {
                 ({{DetectionDiffInMin}} min)
                 <hr> <!--------------------------------------------------->
                 <b>event[1]: {{ eventsArray["1"] }} </b><br>
-                <b>backup P702: <span  ng-style="myStyleLastEvent('backup P720','2017-12-17 16:31:53')"> {{ eventsArray["backup P702"] }} </span></b><br>
-                <b>backup P702: <span  ng-style="myStyleLastEvent('backup P720',eventsArray['backup P720'])"> {{ eventsArray["backup P702"] }} </span></b><br>
-                <b>backup P702: <span  ng-style="myStyleLastDetection(eventsArray['backup P720'])"> {{ eventsArray["backup P702"] }} </span></b><br>
-                <b>last getWindows: <span  ng-style="myStyleLastGetwindowTitleMypc3(eventsArray['getWindowTitle mypc3'])"> {{ eventsArray["getWindowTitle mypc3"] }} </span></b><br>
+                <b>backup P702: <span  ng-style="myStyleLastEvent('backup P702',eventsArray['backup P702'])"> {{ eventsArray["backup P702"] }} </span></b><br>
+                <b>last getWindows: <span  ng-style="myStyleLastEvent('getWindowTitle mypc3',eventsArray['getWindowTitle mypc3'])"> {{ eventsArray["getWindowTitle mypc3"] }} </span></b><br>
             </td>
         </table>
         <hr> <!--------------------------------------------------->
@@ -869,6 +861,7 @@ if ($obj->errMsg != "") {
             <tr ng-repeat="x in fgw">
                 <td>{{ x.date }}</td>
                 <td>{{ x.time }}</td>
+                <td>{{ x.host }}</td>
                 <td>{{ x.title }}</td>
                 <td>{{ x.duration }}</td>
                 <td>{{ x.dur_min }}</td>
